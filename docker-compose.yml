@@ -1,0 +1,54 @@
+version: '3.8'
+
+networks:
+  kafka-net:
+    driver: bridge
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - kafka-net
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENERS: "PLAINTEXT://:9092"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - kafka-net
+
+  producer:
+    image: cart-service:latest  # Use your built producer image
+    container_name: producer
+    depends_on:
+      - kafka
+    ports:
+      - "3001:3001"  # Expose API for external access
+    environment:
+      KAFKA_BROKER: "kafka:9092"
+    networks:
+      - kafka-net
+
+  consumer:
+    image: order-service:latest  # Use your built consumer image
+    container_name: consumer
+    depends_on:
+      - kafka
+    ports:
+      - "3002:3002"  # Expose API for external access
+    environment:
+      KAFKA_BROKER: "kafka:9092"
+    networks:
+      - kafka-net

@@ -1,0 +1,20 @@
+# Use the official Python 3.11 image from the Docker Hub
+FROM python:3.11.9
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the requirements file to the container
+COPY requirements.txt .
+
+# Install the dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the entire application code into the container
+COPY . .
+
+# Expose the port your app will run on (default is 5000 for Flask, change if necessary)
+EXPOSE 3001
+
+# Define the command to run your application
+CMD ["python", "cart_api.py"]
